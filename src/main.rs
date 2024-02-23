@@ -1,90 +1,53 @@
-fn main() {
+
+use axum::{
+    routing::{get, post},
+    Router
+};
+
+use std::sync::{Arc, Mutex};
+
+use askama::Template;
+
+use tower_http::add_extension::AddExtensionLayer;
 
 
-    let size = 4;
+mod cell;
+mod config;
+mod conway;
 
-    let mut matrix = vec![vec![0; size]; size];
+
+use conway::{conways_game_of_life, update_cells, set_preset};
 
 
-    preset_matrix(&mut matrix);
+#[derive(Template)]
+#[template(path = "page.html")]
+struct PageTemplate{
+    length: i32,
+}
 
-    loop {
-        print_matrix(&matrix);
-        println!();
+#[tokio::main]
+async fn main(){
 
-        //wait for 1 second
-        matrix = apply_rules(&matrix);
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-    }
+    //let preset = config::config();
+    let preset = "toad";
+
+    let cells = Arc::new(Mutex::new(cell::cell::Cells::new(preset).unwrap()));
+
+
+
+
+    // build our application with a route
+    let app = Router::new()
+        // `GET /` goes to `root`
+        .route("/conway", get(conways_game_of_life))
+        .route("/next_generation", get(update_cells).post(update_cells))
+        .route("/set_preset", get(set_preset).post(set_preset))
+        .layer(AddExtensionLayer::new(cells));
+
+    // run our app with hyper, listening globally on port 3000
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 
 }
 
-
-fn preset_matrix(matrix: &mut Vec<Vec<i32>>) {
-    let size = matrix.len() as usize;
-    for (i, row) in matrix.iter_mut().enumerate() {
-        for (j, cell) in row.iter_mut().enumerate() {
-            if (i > 0 && i < size-1) && (j > 0 && j < size-1){
-                *cell = 1;
-            }
-        }
-    }
-}
-
-
-fn print_matrix(matrix: &Vec<Vec<i32>>) {
-    // clear the screen
-    print!("\x1B[2J\x1B[1;1H");
-    for row in matrix.iter() {
-        for cell in row.iter() {
-            print!("{} ", cell);
-        }
-        println!();
-    }
-}
-
-
-fn apply_rules(matrix: &Vec<Vec<i32>>) -> Vec<Vec<i32>>{
-    let mut new_matrix = vec![vec![0; matrix.len()]; matrix.len()];
-    for (i, row) in matrix.iter().enumerate() {
-        for (j, cell) in row.iter().enumerate() {
-            let count = count_neighbors(&matrix, i , j);
-
-
-            if *cell == 1 {
-                if count < 2 || count > 3 {
-                    new_matrix[i][j] = 0;
-                } else {
-                    new_matrix[i][j] = 1;
-                }
-            } else {
-                if count == 3 {
-                    new_matrix[i][j] = 1;
-                } else {
-                    new_matrix[i][j] = 0;
-                }
-            }
-        }
-    }
-
-    new_matrix
-}
-
-
-fn count_neighbors(matrix: &Vec<Vec<i32>>, i: usize, j: usize) -> i32 {
-    let mut count = 0;
-    for x in -1..2 {
-        for y in -1..2 {
-            if x == 0 && y == 0 {
-                continue;
-            }
-            let new_i = i as i32 + x;
-            let new_j = j as i32 + y;
-            if new_i >= 0 && new_i < matrix.len() as i32 && new_j >= 0 && new_j < matrix.len() as i32 {
-                count += matrix[new_i as usize][new_j as usize];
-            }
-        }
-    }
-    count
-}
 

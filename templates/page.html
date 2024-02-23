@@ -1,0 +1,71 @@
+<head>
+    <title>Welcome to Conways Life</title>
+    <meta charset="utf-8">
+    <script src="https://unpkg.com/htmx.org@1.6.0/dist/htmx.js"></script>
+</head>
+
+<style>
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat({{ length }}, 100px);
+    padding: 10px;
+}
+</style>
+
+<style>
+.square_dead {
+    width: 100px;
+    height: 100px;
+    background-color: black;
+    border: 2px solid white;
+}
+</style>
+
+<style> .square_alive {
+    width: 100px;
+    height: 100px;
+    background-color: gray;
+    border: 2px solid white;
+}
+</style>
+
+
+<body>
+
+    <form hx-post="/set_preset" hx-target="#grid">
+        <<select name="preset">
+            <<option value="blinker">Blinker</option>
+            <<option value="toad">Toad</option>
+        </select>
+
+        <<button type="submit" value="Submit">Set Preset</button>
+    </form>
+
+    <button hx-get="/next_generation" hx-target="#grid">Play</button>
+
+    <button onclick="startLoop()">Start</button>
+    <button onclick="stopLoop()">Stop</button>
+    <div id="grid">Grid</div>
+
+</body>
+
+
+<script>
+        // Function to send GET request and update the div
+        function sendRequestAndUpdate() {
+            htmx.ajax('GET', '/next_generation', { target: '#grid', swap: 'innerHTML' });
+        }
+
+        // Variables to control the loop
+        let loopInterval;
+
+        // Function to start the loop
+        function startLoop() {
+            loopInterval = setInterval(sendRequestAndUpdate, 1000); // Update every second
+        }
+
+        // Function to stop the loop
+        function stopLoop() {
+            clearInterval(loopInterval);
+        }
+    </script>
