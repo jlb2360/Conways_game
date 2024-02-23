@@ -57,7 +57,6 @@ pub async fn update_cells(Extension(shared_cell): Extension<Arc<Mutex<Cells>>>) 
 
 pub async fn set_preset(Extension(shared_cell): Extension<Arc<Mutex<Cells>>>, form: Form<Preset>) -> Html<String>{
     let preset = form.preset.clone();
-    println!("Preset: {}", preset);
     let mut new_cells = shared_cell.lock().unwrap();
     new_cells.get_presets(&preset);
     let mut squares = String::new();

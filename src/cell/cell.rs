@@ -37,6 +37,10 @@ impl Cells {
                 let cell = Cells::toad();
                 Ok(cell)
             },
+            "r_pentomino"=> {
+                let cell = Cells::r_pentomino();
+                Ok(cell)
+            },
             default => return Err(CellError{message: format!("Unknown preset: {}", default)}),
         }
     }
@@ -49,25 +53,14 @@ impl Cells {
             "toad"=> {
                 self.cells = Cells::toad().cells;
             },
+            "r_pentomino"=> {
+                self.cells = Cells::r_pentomino().cells;
+            },
             _ => (),
         }
     }
 
 
-    pub fn print(&self) {
-        //clear the screen
-        print!("\x1B[2J\x1B[1;1H");
-        for row in self.cells.iter() {
-            for cell in row.iter() {
-                if *cell {
-                    print!("1");
-                } else {
-                    print!("0");
-                }
-            }
-            println!();
-        }
-    }
 
 
     pub fn apply_rules(&mut self) {
@@ -99,9 +92,6 @@ impl Cells {
 
     }
 
-    pub fn get_len(&self) -> usize {
-        self.cells.len()
-    }
 
 
     fn count_neighbors(&self, i: usize, j: usize) -> i32 {
@@ -161,6 +151,25 @@ impl Cells {
             vec![false, false, false, false, true, true, true, false, false, false],
             vec![false, false, false, true, true, true, false, false, false, false],
             vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, false, false, false, false, false, false],
+        ]
+        };
+
+        cell
+    }
+
+    fn r_pentomino() -> Cells{
+        // set to be 10x10
+        let cell = Cells{ cells: vec![
+            vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, false, false, false, false, false, false],
+            vec![false, false, false, false, true, true, false, false, false, false],
+            vec![false, false, false, true, true, false, false, false, false, false],
+            vec![false, false, false, false, true, false, false, false, false, false],
             vec![false, false, false, false, false, false, false, false, false, false],
             vec![false, false, false, false, false, false, false, false, false, false],
             vec![false, false, false, false, false, false, false, false, false, false],
